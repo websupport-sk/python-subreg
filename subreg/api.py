@@ -136,23 +136,58 @@ class Api(object):
                 return False
         return False
 
-    def create_contact(self, **kwargs):
+    def create_contact(self, contact):
         """
         Create contact in Subreg DB
 
-        .. seealso:: https://soap.subreg.cz/manual/?cmd=Create_Contact
-        .. exception:: NotImplementedError
-        """
-        raise NotImplementedError
+        :param dict contact:    Data about contact
+            string	name:        First name of contact
+            string	surname:     Second name of contact
+            string	org:         Organization name (optionally)
+            string	street:      Address of contact
+            string	city:        City of contact
+            string	pc:          ZIP code of contact
+            string	sp:          State of contact (optionally)
+            string	cc:          ISO Country Code of contact
+            string	phone:       Phone of contact in format +1.234567890
+            string	fax:         Faxsimile of contact in format +1.234567890 (optionally)
+            string	email:       Email of contact
+            dict	params:      Details for fred contacts (.CZ, .EE) (optionally)
+                string	regid:         NIC ID
+                string	notify_email:  Email for NIC notify
+                string	vat:           VAT Number
+                string	ident_type:    (op,passport,mpsv,ico,birthday)
+                string	ident_number:
+                dict	disclose:      (voice,fax,email,vat,ident,notify_email)
 
-    def update_contact(self, **kwargs):
+        .. seealso:: https://soap.subreg.cz/manual/?cmd=Create_Contact
+        """
+        kwargs = {'contact': contact}
+        response = self._request('Create_Contact', kwargs)
+        return response
+
+    def update_contact(self, contact):
         """
         Update contact
 
+        :param dict  contact:  Data about contact
+            string  id:      ID of updating contact
+            string  name:    Name of person (optionally)
+            string  surname: Surname of person (optionally)
+            string  street:  Address of contact (optionally)
+            string  city:    City of contact (optionally)
+            string  pc:      ZIP code of contact (optionally)
+            string  sp:      State of contact (optionally)
+            string  cc:      ISO Country Code of contact (optionally)
+            string  phone:   Phone of contact in format +1.234567890 (optionally)
+            string  fax:     Faxsimile of contact in format +1.234567890 (optionally)
+            string  email:	Email of contact (optionally)
+
         .. seealso:: https://soap.subreg.cz/manual/?cmd=Update_Contact
-        .. exception:: NotImplementedError
         """
-        raise NotImplementedError
+        kwargs = {'contact': contact}
+        response = self._request('Update_Contact', kwargs)
+        return response
 
     def info_contact(self, contact_id):
         """
@@ -161,9 +196,10 @@ class Api(object):
         :param int contact_id: ID of your querying contact
 
         .. seealso:: https://soap.subreg.cz/manual/?cmd=Info_Contact
-        .. exception:: NotImplementedError
         """
-        raise NotImplementedError
+        kwargs = {'contact': [contact_id]}
+        response = self._request('Info_Contact', kwargs)
+        return response
 
     def contacts_list(self):
         """
