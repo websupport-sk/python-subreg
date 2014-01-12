@@ -242,7 +242,7 @@ class Api(object):
 
         .. seealso:: https://soap.subreg.cz/manual/?cmd=Make_Order
         """
-        response = self._request('Info_Contact', order)
+        response = self._request("Make_Order", order)
         return response
 
     def info_order(self, order_id):
