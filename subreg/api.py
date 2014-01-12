@@ -233,14 +233,17 @@ class Api(object):
         """
         raise NotImplementedError
 
-    def make_order(self, **kwargs):
+    def make_order(self, order):
         """
         Create a new order (CreateDomain, ModifyDomain, RenewDomain, ... )
 
+
+        :param array	order   See what that means on URL below
+
         .. seealso:: https://soap.subreg.cz/manual/?cmd=Make_Order
-        .. exception:: NotImplementedError
         """
-        raise NotImplementedError
+        response = self._request('Info_Contact', order)
+        return response
 
     def info_order(self, order_id):
         """
@@ -561,25 +564,59 @@ class Api(object):
 
     # -- Orders ----------------------------------------------------------------
 
-    def create_domain(self):
-        """Order: `Create_Domain`
-        Create a new domain.
-        For DNSSEC extension please see full
-        specification `here <https://soap.subreg.cz/manual/?cmd=DNSSEC>`_
-
-        .. seealso:: https://soap.subreg.cz/manual/?cmd=Create_Domain
-        .. exception:: NotImplementedError
+    def create_domain(self, domain, registrant, admin, tech, nss, authid="", period=1):
         """
-        raise NotImplementedError
+            Create new domain
 
-    def transfer_domain(self):
-        """
-        Transfer domain between two registrars or two account
+            For DNSSEC extension please see full
 
-        .. seealso:: https://soap.subreg.cz/manual/?cmd=Transfer_Domain
-        .. exception:: NotImplementedError
+            :param string  domain       domain name
+            :param string  registrant   contact ID for registrant
+            :param string  admin        contact ID for admin
+            :param string  tech         contact ID for tech
+            :param dict    nss          NS servers
+            :param string  authid       password to transfer/editation(?)
+            :param int     period       number of years
+
+            Return dict with status and orderid.
+
+            .. seealso:: https://soap.subreg.cz/manual/?cmd=Create_Domain
         """
-        raise NotImplementedError
+        order = {
+            "domain": domain,
+            "type": "Create_Domain",
+            "params": {
+                "registrant": {"id": registrant},
+                "contacts": {
+                    "admin": {"id": admin},
+                    "tech": {"id": tech},
+                },
+                "ns": {"hosts": nss},
+                "params": {"authid": authid},
+                "period": period,
+            }
+        }
+        return self.make_order(order)
+
+    def transfer_domain(self, domain, authid=""):
+        """
+            Transfer domain
+
+            :param string  domain       domain name
+            :param string  authid       password for transfer
+
+            Return dict with status and orderid.
+
+            .. seealso:: https://soap.subreg.cz/manual/?cmd=Transfer_Domain
+        """
+        order = {
+            "domain": domain,
+            "type": "Transfer_Domain",
+            "params": {
+                "params": {"authid": authid},
+            }
+        }
+        return self.make_order(order)
 
     def account_transfer_domain(self):
         """
@@ -629,54 +666,121 @@ class Api(object):
         """
         raise NotImplementedError
 
-    def modify_domain(self):
+    def modify_domain(self, domain, admin, tech, nss, authid):
         """
         Modify existing domain to new values.
         For DNSSEC extension please see full
         specification `here <https://soap.subreg.cz/manual/?cmd=DNSSEC>`_.
+
+        :param string  domain       domain name
+        :param string  admin        contact ID for admin
+        :param string  tech         contact ID for tech
+        :param dict    nss          NS servers
+        :param string  authid       password to transfer/editation(?)
 
         .. seealso:: https://soap.subreg.cz/manual/?cmd=Modify_Domain
         .. exception:: NotImplementedError
         """
-        raise NotImplementedError
+        
+        order = {
+            "type": "Modify_Domain",
+            "domain": domain,
+            "params": {
+                "contacts": {
+                    "admin": {
+                        "regid": admin,
+                    },
+                    "tech": {
+                        "regid": tech,
+                    },
+                },
+                "ns": {
+                    "hosts": nss,
+                },
+                "params": {
+                    "authid": authid,
+                    "status": {"clientTransferProhibited"},
+                }
+            }
+        }
+        return self.make_order(order)
 
-    def modify_ns_domain(self):
+    def modify_ns_domain(self, domain, nss):
         """
         Modify existing domain to new values.
         For DNSSEC extension please see full
         specification `here <https://soap.subreg.cz/manual/?cmd=DNSSEC>`_.
 
-        .. seealso:: https://soap.subreg.cz/manual/?cmd=ModifyNS_Domain
-        .. exception:: NotImplementedError
-        """
-        raise NotImplementedError
+        :param string  domain       domain name
+        :param dict    nss          NS servers
 
-    def delete_domain(self):
+        .. seealso:: https://soap.subreg.cz/manual/?cmd=ModifyNS_Domain
+        """
+
+        order = {
+            "type": "ModifyNS_Domain",
+            "domain": domain,
+            "params": {
+                "ns": {
+                    "hosts": nss,
+                }
+            }
+        }
+        return self.make_order(order)
+
+    def delete_domain(self, domain, reason):
         """
         Delete a existing domain from your account
 
-        .. seealso:: https://soap.subreg.cz/manual/?cmd=Delete_Domain
-        .. exception:: NotImplementedError
-        """
-        raise NotImplementedError
+        :param string  domain       domain name
+        :param string  reason       reason to deleate
 
-    def restore_domain(self):
+        .. seealso:: https://soap.subreg.cz/manual/?cmd=Delete_Domain
+        """
+
+        order = {
+            "type": "Delete_Domain",
+            "domain": domain,
+            "params": {
+                "reason": reason,
+            }
+        }
+        return self.make_order(order)
+
+    def restore_domain(self, domain):
         """
         Restore a deleted domain from your account
+
+        :param string  domain       domain name
 
         .. seealso:: https://soap.subreg.cz/manual/?cmd=Restore_Domain
         .. exception:: NotImplementedError
         """
-        raise NotImplementedError
 
-    def renew_domain(self):
+        order = {
+            "type": "Restore_Domain",
+            "domain": domain,
+        }
+        return self.make_order(order)
+
+    def renew_domain(self, domain, period):
         """
         Renew a existing domain from your account
 
+        :param string  domain       domain name
+        :param int     period       amount of years
+
         .. seealso:: https://soap.subreg.cz/manual/?cmd=Renew_Domain
-        .. exception:: NotImplementedError
         """
-        raise NotImplementedError
+
+        order = {
+            "type": "Restore_Domain",
+            "domain": domain,
+            "params": {
+                "period": period,
+            }
+        }
+        return self.make_order(order)
 
     def backorder_domain(self):
         """
