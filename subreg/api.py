@@ -705,6 +705,29 @@ class Api(object):
         }
         return self.make_order(order)
 
+    def modify_domain_dnssec(self, domain, records=None, dsdata=None):
+        """
+        Modify dnssec for existing domain
+
+        :param string  domain       domain name
+        :param string  records      dnssec key data
+        :param string  dsdata       dnssec ds data
+        """
+
+        data = {
+            "order": {
+                "type": "ModifyNS_Domain",
+                "domain": domain,
+                "params": {
+                    "params": {
+                        "records": records,
+                        "dsdata": dsdata,
+                    }
+                }
+            }
+        }
+        return self.make_order(data)
+
     def modify_ns_domain(self, domain, nss):
         """
         Modify existing domain to new values.
