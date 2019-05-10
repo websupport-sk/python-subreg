@@ -26,7 +26,7 @@
 from __future__ import unicode_literals
 
 import re
-from SOAPpy import SOAPProxy, typedArrayType
+from SOAPpy import SOAPProxy, typedArrayType, Types
 
 from .exceptions import ApiError
 
@@ -952,9 +952,18 @@ class Api(object):
             for item in response:
                 returned = self._parse_response(item)
                 result.append(returned)
+        elif isinstance(response, Types.arrayType):
+            result = list()
+            for item in response:
+                returned = self._parse_response(item)
+                result.append(returned)
         elif isinstance(response, list):
             for item in response:
                 returned = self._parse_response(item)
                 if isinstance(returned, dict):
                     result = dict(result.items() + returned.items())
+        elif isinstance(response, str):
+            result=response
+        elif isinstance(response, float):
+            result=response
         return result
